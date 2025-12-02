@@ -1,0 +1,12 @@
+[project]
+name = "ultimate-scraper"
+version = "0.1.0"
+description = "Web scraper for Ultimate Frisbee Association statistics"
+requires-python = ">=3.9"
+
+[project.dependencies]
+requests = "*"
+beautifulsoup4 = "*"
+lxml = "*"
+python-dotenv = "*"
+pydantic-settings = "*"
