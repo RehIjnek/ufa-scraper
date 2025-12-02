@@ -1,2 +1,2 @@
-# ufa-api
-API for looking up Ultimate Frisbee Association statistics
+# ufa-scraper
+Web Scraper for UFA statistics
