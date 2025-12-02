@@ -1,10 +1,10 @@
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 
 class Settings(BaseSettings):
-    BASE_URL: str = "https://www.watchufa.com/"
-    RATE_LIMIT: float = 2.0  # seconds between requests
+    model_config = ConfigDict(env_file=".env")
 
-    class Config:
-        env_file = ".env"
+    BASE_URL: str = "https://www.watchufa.com/"
+    RATE_LIMIT: float = 2.0
 
 settings = Settings()

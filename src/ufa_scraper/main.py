@@ -7,23 +7,29 @@ from ufa_scraper.pipelines.storage import save_player_stats
 from ufa_scraper.utils.logging_setup import setup_logging
 
 def main():
-    setup_logging()
-    logger = logging.getLogger(__name__)
+    # setup_logging()
+    # logger = logging.getLogger(__name__)
 
+    # client = HttpClient()
+    # stats_page = StatsPage(client)
+    # parser = StatsParser()
+
+    # player_id = "12345"  # Example; replace with real ID
+    # logger.info(f"Scraping stats for player {player_id}")
+
+    # html = stats_page.get_player_stats_html(player_id)
+    # data = parser.parse_player_stats(html)
+    # data = clean_stats(data)
+
+    # save_player_stats(data)
+
+    # logger.info(f"Saved stats: {data}")
     client = HttpClient()
     stats_page = StatsPage(client)
-    parser = StatsParser()
 
-    player_id = "12345"  # Example; replace with real ID
-    logger.info(f"Scraping stats for player {player_id}")
-
+    player_id = "bjagt"
     html = stats_page.get_player_stats_html(player_id)
-    data = parser.parse_player_stats(html)
-    data = clean_stats(data)
-
-    save_player_stats(data)
-
-    logger.info(f"Saved stats: {data}")
+    print(html)
 
 if __name__ == "__main__":
     main()
