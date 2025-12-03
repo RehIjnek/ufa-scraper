@@ -18,7 +18,8 @@ dependencies = [
     "beautifulsoup4",
     "lxml",
     "python-dotenv",
-    "pydantic-settings"
+    "pydantic-settings",
+    "pymongo"
 ]
 
 # Optional dev dependencies

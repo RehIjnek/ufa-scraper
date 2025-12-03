@@ -4,3 +4,4 @@ lxml
 pydantic-settings
 python-dotenv
 pytest
+pymongo
