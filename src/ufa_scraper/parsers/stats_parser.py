@@ -1,12 +1,19 @@
 from bs4 import BeautifulSoup
+import json
 
 class StatsParser:
-    def parse_player_stats(self, html: str) -> dict:
-        soup = BeautifulSoup(html, "lxml")
+    def parse_player_stats_frontend(self, html_str: str) -> dict:
+        soup = BeautifulSoup(html_str, "lxml")
 
-        # stats table parsing logic goes here
-        stats = soup.find("div", class_="svelte-player-stats-table svelte-mkdd1m") or None
+        # player stats page parsing logic goes here
+        # TODO
 
         return {
-            stats: stats.text.strip() if stats else "No stats found"
+            "stats": "No stats found"
         }
+    
+    def parse_player_stats_backend(self, json_str: str) -> dict:
+        data = json.loads(json_str)
+
+        return data
+    
