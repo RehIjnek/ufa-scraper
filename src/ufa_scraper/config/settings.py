@@ -1,10 +1,11 @@
-from pydantic_settings import BaseSettings
-from pydantic import ConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    model_config = ConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env")
 
-    BASE_URL: str = "https://www.watchufa.com/"
+    FRONTEND_BASE_URL: str = "https://www.watchufa.com/"
+    BACKEND_BASE_URL: str = "https://www.backend.ufastats.com/"
     RATE_LIMIT: float = 2.0
+    MONGO_URI: str
 
 settings = Settings()

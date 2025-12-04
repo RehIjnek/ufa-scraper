@@ -26,10 +26,13 @@ def main():
     # logger.info(f"Saved stats: {data}")
     client = HttpClient()
     stats_page = StatsPage(client)
+    stats_parser = StatsParser()
 
     player_id = "bjagt"
-    html = stats_page.get_player_stats_html(player_id)
-    print(html)
+    # html = stats_page.get_player_stats_frontend(player_id)
+    # print(html)
+    html = stats_page.get_player_stats_backend(player_id)
+    print(html)  
 
 if __name__ == "__main__":
     main()
