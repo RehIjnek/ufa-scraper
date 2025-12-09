@@ -5,7 +5,7 @@ class Settings(BaseSettings):
 
     FRONTEND_BASE_URL: str = "https://www.watchufa.com/"
     BACKEND_BASE_URL: str = "https://www.backend.ufastats.com/"
-    RATE_LIMIT: float = 2.0
+    RATE_LIMIT: float = 5.0
     MONGO_URI: str
 
 settings = Settings()

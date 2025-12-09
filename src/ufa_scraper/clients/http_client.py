@@ -16,7 +16,7 @@ class HttpClient:
         full_url = f"{settings.FRONTEND_BASE_URL}{url}"
         self._rate_limit()
 
-        response = self.session.get(full_url, timeout=10)
+        response = self.session.get(full_url, timeout=30)
         self.last_request_time = time.time()
 
         response.raise_for_status()
@@ -26,7 +26,7 @@ class HttpClient:
         full_url = f"{settings.BACKEND_BASE_URL}{url}"
         self._rate_limit()
 
-        response = self.session.get(full_url, timeout=10)
+        response = self.session.get(full_url, timeout=30)
         self.last_request_time = time.time()
 
         response.raise_for_status()

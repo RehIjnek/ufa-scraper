@@ -9,6 +9,7 @@ from ufa_scraper.pipelines.clean import clean_stats
 from ufa_scraper.pipelines.storage import save_player_stats, save_players
 from ufa_scraper.utils.logging_setup import setup_logging
 
+CURRENT_PAGE = 41
 MAX_PAGES = 187
 
 def main():
@@ -21,7 +22,7 @@ def main():
     players_page = PlayersPage(client)
     players_parser = PlayersParser()
 
-    for page_id in range(MAX_PAGES):
+    for page_id in range(CURRENT_PAGE, MAX_PAGES):
         logger.info(f"Beginning player page {page_id} scraping")
         players_html = players_page.get_players(page_id)
         players_data = players_parser.parse_players(players_html)
