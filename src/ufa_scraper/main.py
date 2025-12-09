@@ -9,7 +9,7 @@ from ufa_scraper.pipelines.clean import clean_stats
 from ufa_scraper.pipelines.storage import save_player_stats, save_players
 from ufa_scraper.utils.logging_setup import setup_logging
 
-CURRENT_PAGE = 41
+CURRENT_PAGE = 49
 MAX_PAGES = 187
 
 def main():
