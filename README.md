@@ -2,7 +2,7 @@
 Web Scraper for UFA statistics
 
 TODO:
-- players_page.py: gets page for all players
-- players_parser.py: parses players page
-- need to figure out how i want to store data
+- scrape more data regarding stats for individual performances per game?
+- determine what to do with the stats (model?)
+- need to figure out how i want to store data (currently csv files)
 - tbd...
