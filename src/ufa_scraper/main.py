@@ -9,8 +9,9 @@ from ufa_scraper.pipelines.clean import clean_stats
 from ufa_scraper.pipelines.storage import save_player_stats, save_players
 from ufa_scraper.utils.logging_setup import setup_logging
 
-CURRENT_PAGE = 49
+CURRENT_PAGE = 0
 MAX_PAGES = 187
+CURRENT_PLAYER = 0
 
 def main():
     # Setup
@@ -32,7 +33,7 @@ def main():
         # Scrape stats for each player
         stats_page = StatsPage(client)
         stats_parser = StatsParser()
-        for i in range(len(players_data["players"])):
+        for i in range(CURRENT_PLAYER, len(players_data["players"])):
             logger.info(f"Beginning stats scraping for player {players_data['players'][i]['player_id']}")
             stats_html = stats_page.get_player_stats_backend(players_data["players"][i]["player_id"])
             stats_data = stats_parser.parse_player_stats_backend(stats_html)
