@@ -45,4 +45,4 @@ if __name__ == "__main__":
     start = time.perf_counter()
     main()
     end = time.perf_counter()
-    print(f"Finished in {end - start:.2f} seconds")
+    print(f"Finished in {int((end - start) // 3600)} hours, {int((end - start) % 3600 // 60)} minutes, and {(end - start) % 60:.2f} seconds.")
