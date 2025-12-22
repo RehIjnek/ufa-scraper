@@ -12,7 +12,7 @@ class StatsPage:
         path = f"/web-v1/roster-stats-for-player?playerID={player_id}"
         return self.client.get_backend(path)
     
-    def get_game_stats_backend(self, game_id: str):
+    def get_game_stats(self, game_id: str):
         path = f"/stats-pages/game/{game_id}"
         return self.client.get_backend(path)
     

@@ -1,4 +1,4 @@
-def clean_stats(data: dict) -> dict:
+def clean_player_stats(data: dict) -> dict:
     if data["stats"] == []:
         return {
             "stats": [

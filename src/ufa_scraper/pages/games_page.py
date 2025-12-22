@@ -5,6 +5,6 @@ class GamesPage:
         self.client = client
     
     def get_games(self, page_id: str):
-        path = f"/stats/team-game-stats?page={page_id}"
-        return self.client.get_frontend(path)
+        path = f"/web-v1/team-game-stats?limit=20&page={page_id}"
+        return self.client.get_backend(path)
     
