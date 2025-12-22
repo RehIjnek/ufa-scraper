@@ -8,4 +8,3 @@ class PlayersPage:
         path = f"/league/players?page={page_id}"
         return self.client.get_frontend(path)
     
-    

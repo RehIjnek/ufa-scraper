@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-import json
 
 class PlayersParser:
     def parse_players(self, html_str: str) -> dict:
