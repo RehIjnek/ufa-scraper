@@ -17,9 +17,9 @@ CURRENT_PLAYER_PAGE = 0
 MAX_PLAYER_PAGES = 187
 CURRENT_PLAYER = 0
 
-CURRENT_GAME_PAGE = 2
-MAX_GAME_PAGES = 3
-CURRENT_GAME = 2
+CURRENT_GAME_PAGE = 1   # page 77 is where advanced stats stop
+MAX_GAME_PAGES = 176
+CURRENT_GAME = 0
 
 def player_scraping():
     # Setup
