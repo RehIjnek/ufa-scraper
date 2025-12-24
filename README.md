@@ -31,7 +31,9 @@ These event types were derived from the backend information that was scraped.
 | **19** | Dropped pass                              | 
 | **20** | Throw attempt                             | 
 | **21** | Indicates other team scored               | 
-| **22** | Goal                                      |  
+| **22** | Goal                                      |   
+| **34** | Idk                                       | 
+| **35** | Idk                                       |
 | **40** | Line change                               | 
 | **41** | Line change                               |  
 | **44** | We're offsides                            | 
