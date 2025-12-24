@@ -73,7 +73,6 @@ def game_scraping():
             logger.info(f"Beginning stats scraping for game {games_data['stats'][i]['gameID']}")
             stats_html = stats_page.get_game_stats(games_data["stats"][i]["gameID"])
             stats_data = stats_parser.parse_game_stats(stats_html)
-            # cleaned_stats_data = clean_game_stats(stats_data)
             logger.info(f"Ending stats scraping for game {games_data['stats'][i]['gameID']}")
             save_game_stats(stats_data, filename=f"{games_data['stats'][i]['gameID']}_stats.csv")
 
