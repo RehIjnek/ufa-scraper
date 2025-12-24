@@ -9,6 +9,7 @@ Web Scraper & ELO Ranker for UFA statistics
 - Tbd...
 
 **Event Types**
+<br>
 These event types were derived from the backend information that was scraped.
 
 | `t`    | **Meaning**                               | 
