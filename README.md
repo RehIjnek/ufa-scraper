@@ -1,14 +1,16 @@
 # ufa-scraper
 Web Scraper & ELO Ranker for UFA statistics
 
-TODO:
-- need to implement elo ranker
-- need to figure out how i want to store data (currently csv files)
-- how can i make this scraping more efficient?
-- what are best practices for splitting scraping jobs?
-- tbd...
+**TODO:**
+- Need to implement elo ranker
+- Need to figure out how i want to store data (currently csv files)
+- How can i make this scraping more efficient?
+- What are best practices for splitting scraping jobs?
+- Tbd...
 
-Event Types
+**Event Types**
+These event types were derived from the backend information that was scraped.
+
 | `t`    | **Meaning**                               | 
 | ------ | ----------------------------------------- | 
 | **50** | Start-of-game                             | 
@@ -42,3 +44,9 @@ Event Types
 | **x, y** | *Field coordinates*                 | Normalized: 0 = center, ±something = left/right, 100 = end zone. |
 | **n**    | *Event number / timestamp-ish*      | Internal ordering number; not meaningful for stats.              |
 | **ms**   | *Milliseconds since sequence start* | Only appears in pull events.                                     |
+
+**Assumptions**
+- Throwing / receiving / total yards will were calculated by only accruing yardage gain / loss on the y-axis
+- Advanced stats only go back as far as August 10, 2019, any game stat file prior to that date will have values zeroed out
+- Many event types were also bypassed in the scraping due to not being associated with a player ID, except throwaways and stalls
+- etc...
