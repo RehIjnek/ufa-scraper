@@ -2,6 +2,11 @@
 
 import logging
 import time
+import math
+import json 
+import numpy as np
+import pandas as pd
+from pathlib import Path
 from ufa_scraper.clients.http_client import HttpClient
 from ufa_scraper.pages.games_page import GamesPage
 from ufa_scraper.pages.players_page import PlayersPage
@@ -13,6 +18,7 @@ from ufa_scraper.pipelines.clean import clean_player_stats
 from ufa_scraper.pipelines.storage import save_player_stats, save_players, save_game_stats, save_games
 from ufa_scraper.utils.logging_setup import setup_logging
 
+# WEB SCAPER VARIABLES
 CURRENT_PLAYER_PAGE = 0
 MAX_PLAYER_PAGES = 187
 CURRENT_PLAYER = 0
@@ -20,6 +26,15 @@ CURRENT_PLAYER = 0
 CURRENT_GAME_PAGE = 1   # page 77 is where advanced stats stop
 MAX_GAME_PAGES = 176
 CURRENT_GAME = 0
+
+# ELO UODATER VARIABLES
+START_ELO = 1500
+
+K_BASE = 8
+ALPHA = 0.35
+
+Z_CLIP = 2.5
+MIN_POINTS = 5
 
 def player_scraping():
     # Setup
@@ -76,9 +91,132 @@ def game_scraping():
             logger.info(f"Ending stats scraping for game {games_data['stats'][i]['gameID']}")
             save_game_stats(stats_data, filename=f"{games_data['stats'][i]['gameID']}_stats.csv")
 
+def compute_raw_contribution(row):
+    return (
+        1.0 * row.get("goals", 0)
+        + 0.9 * row.get("assists", 0)
+        + 0.5 * row.get("hockey_assists", 0)
+        + 1.0 * row.get("blocks", 0)
+        + 1.2 * row.get("breaks", 0)
+        - 1.0 * row.get("throwaways", 0)
+        - 0.8 * row.get("drops", 0)
+        - 1.2 * row.get("stalls", 0)
+    )
+
+def update_team_elos(team_df, players, game_result):
+    """
+    team_df: DataFrame for one team in one game
+    players: dict[player_id] -> {"name": str, "elo": float}
+    game_result: +1 win, -1 loss (or tanh-scaled)
+    """
+
+    team_df = team_df.copy()
+
+    # Initialize players if missing
+    for _, row in team_df.iterrows():
+        pid = row["player_id"]
+        if pid not in players:
+            players[pid] = {
+                "name": row["name"],
+                "elo": START_ELO,
+            }
+
+    # Contributions
+    team_df["raw"] = team_df.apply(compute_raw_contribution, axis=1)
+    team_df["cpp"] = team_df["raw"] / team_df["points_played"].clip(lower=1)
+
+    mean_cpp = team_df["cpp"].mean()
+    std_cpp = team_df["cpp"].std() + 1e-6
+
+    for _, row in team_df.iterrows():
+        points = row["points_played"]
+        if points < MIN_POINTS:
+            continue
+
+        pid = row["player_id"]
+
+        z = (row["cpp"] - mean_cpp) / std_cpp
+        z = max(min(z, Z_CLIP), -Z_CLIP)
+
+        K = K_BASE * math.sqrt(points / 20)
+        delta = K * game_result * (1 + ALPHA * z)
+
+        players[pid]["elo"] += delta
+
+def process_game_csv(filepath, players, home_team, away_team, home_score, away_score):
+    df = pd.read_csv(filepath)
+
+    score_diff = home_score - away_score
+    game_signal = math.tanh(score_diff / 5)
+
+    home_df = df[df["team"] == home_team]
+    away_df = df[df["team"] == away_team]
+
+    update_team_elos(home_df, players, game_signal)
+    update_team_elos(away_df, players, -game_signal)
+
+def run_season(game_files):
+    players = {}
+
+    for game in game_files:
+        process_game_csv(
+            filepath=game["file"],
+            players=players,
+            home_team=game["home_team"],
+            away_team=game["away_team"],
+            home_score=game["home_score"],
+            away_score=game["away_score"],
+        )
+
+    return players
+
+def save_elos(players, filepath="player_elos.csv"):
+    rows = [
+        {
+            "player_id": pid,
+            "name": info["name"],
+            "elo": round(info["elo"], 2),
+        }
+        for pid, info in players.items()
+    ]
+
+    df = pd.DataFrame(rows).sort_values("elo", ascending=False)
+    df.to_csv(filepath, index=False)
+
+def elo_update():
+    # Setup
+    setup_logging()
+    logger = logging.getLogger(__name__)
+    client = HttpClient()
+
+    stats_page = StatsPage(client)
+
+    # Gather all game stat files
+    game_files = []
+    stats_dir = Path("data/game_stats")
+    for stat_file in stats_dir.glob("2025-*_stats.csv"):
+        # Extract game metadata from filename or associated data source
+        game_id = stat_file.stem.replace("_stats", "")
+        stats_html = stats_page.get_game_stats(game_id)
+        data = json.loads(stats_html)
+        game_metadata = {
+            "file": str(stat_file),
+            "home_team": str(data["game"]["team_season_home"]["abbrev"]),
+            "away_team": str(data["game"]["team_season_away"]["abbrev"]),
+            "home_score": int(data["game"]["score_home"]),
+            "away_score": int(data["game"]["score_away"]),
+        }
+        game_files.append(game_metadata)
+    logger.info(f"Found {len(game_files)} game stat files for ELO update")
+    logger.info("Starting ELO computation for the season")
+    elos = run_season(game_files)
+    logger.info("Finished ELO computation for the season")
+    save_elos(elos)
+
 if __name__ == "__main__":
     start = time.perf_counter()
     # player_scraping()
-    game_scraping()
+    # game_scraping()
+    elo_update()
     end = time.perf_counter()
     print(f"Finished in {int((end - start) // 3600)} hours, {int((end - start) % 3600 // 60)} minutes, and {(end - start) % 60:.2f} seconds.")

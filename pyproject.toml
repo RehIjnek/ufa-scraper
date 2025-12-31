@@ -17,6 +17,8 @@ dependencies = [
     "requests",
     "beautifulsoup4",
     "lxml",
+    "numpy",
+    "pandas",
     "python-dotenv",
     "pydantic-settings",
     "pymongo"

@@ -1,6 +1,8 @@
 requests
 beautifulsoup4
 lxml
+numpy
+pandas
 pydantic-settings
 python-dotenv
 pytest
