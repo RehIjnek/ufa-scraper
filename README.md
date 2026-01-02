@@ -2,7 +2,7 @@
 Web Scraper & ELO Ranker for UFA statistics
 
 **TODO:**
-- Need to implement elo ranker
+- Need to create a front end for the elos
 - Need to figure out how i want to store data (currently csv files)
 - How can i make this scraping more efficient?
 - What are best practices for splitting scraping jobs?

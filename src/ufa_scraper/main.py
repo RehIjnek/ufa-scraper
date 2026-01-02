@@ -91,7 +91,35 @@ def game_scraping():
             logger.info(f"Ending stats scraping for game {games_data['stats'][i]['gameID']}")
             save_game_stats(stats_data, filename=f"{games_data['stats'][i]['gameID']}_stats.csv")
 
+def compute_team_elo(team_df, players):
+    total = 0.0
+    weight = 0.0
+
+    for _, row in team_df.iterrows():
+        pid = row["player_id"]
+        pts = row["points_played"]
+
+        if pid in players and pts > 0:
+            total += players[pid]["elo"] * pts
+            weight += pts
+
+    return total / weight if weight > 0 else START_ELO
+
+def elo_expectation(team_elo, opp_elo):
+    return 1 / (1 + 10 ** ((opp_elo - team_elo) / 400))
+
 def compute_raw_contribution(row):
+    usage = (
+        row.get("assists", 0)
+        + row.get("goals", 0)
+        + row.get("throwaways", 0)
+        + row.get("drops", 0)
+    )
+
+    efficiency = 0
+    if usage > 0:
+        efficiency = (row.get("assists", 0) + row.get("goals", 0)) / usage
+
     return (
         1.0 * row.get("goals", 0)
         + 0.9 * row.get("assists", 0)
@@ -101,18 +129,13 @@ def compute_raw_contribution(row):
         - 1.0 * row.get("throwaways", 0)
         - 0.8 * row.get("drops", 0)
         - 1.2 * row.get("stalls", 0)
+        + 0.75 * efficiency
     )
 
-def update_team_elos(team_df, players, game_result):
-    """
-    team_df: DataFrame for one team in one game
-    players: dict[player_id] -> {"name": str, "elo": float}
-    game_result: +1 win, -1 loss (or tanh-scaled)
-    """
-
+def update_team_elos(team_df, opp_df, players, score_signal):
     team_df = team_df.copy()
 
-    # Initialize players if missing
+    # Initialize players
     for _, row in team_df.iterrows():
         pid = row["player_id"]
         if pid not in players:
@@ -121,7 +144,16 @@ def update_team_elos(team_df, players, game_result):
                 "elo": START_ELO,
             }
 
-    # Contributions
+    # Team Elo expectations
+    team_elo = compute_team_elo(team_df, players)
+    opp_elo = compute_team_elo(opp_df, players)
+
+    expected = elo_expectation(team_elo, opp_elo)
+
+    # Outcome in [0,1]
+    actual = (score_signal + 1) / 2
+
+    # Contribution
     team_df["raw"] = team_df.apply(compute_raw_contribution, axis=1)
     team_df["cpp"] = team_df["raw"] / team_df["points_played"].clip(lower=1)
 
@@ -129,8 +161,8 @@ def update_team_elos(team_df, players, game_result):
     std_cpp = team_df["cpp"].std() + 1e-6
 
     for _, row in team_df.iterrows():
-        points = row["points_played"]
-        if points < MIN_POINTS:
+        pts = row["points_played"]
+        if pts < MIN_POINTS:
             continue
 
         pid = row["player_id"]
@@ -138,22 +170,23 @@ def update_team_elos(team_df, players, game_result):
         z = (row["cpp"] - mean_cpp) / std_cpp
         z = max(min(z, Z_CLIP), -Z_CLIP)
 
-        K = K_BASE * math.sqrt(points / 20)
-        delta = K * game_result * (1 + ALPHA * z)
+        K = K_BASE * math.sqrt(pts / 20)
+        contribution = math.exp(ALPHA * z)
 
+        delta = K * (actual - expected) * contribution
         players[pid]["elo"] += delta
 
 def process_game_csv(filepath, players, home_team, away_team, home_score, away_score):
     df = pd.read_csv(filepath)
 
     score_diff = home_score - away_score
-    game_signal = math.tanh(score_diff / 5)
+    score_signal = math.tanh(score_diff / 5)
 
     home_df = df[df["team"] == home_team]
     away_df = df[df["team"] == away_team]
 
-    update_team_elos(home_df, players, game_signal)
-    update_team_elos(away_df, players, -game_signal)
+    update_team_elos(home_df, away_df, players, score_signal)
+    update_team_elos(away_df, home_df, players, -score_signal)
 
 def run_season(game_files):
     players = {}
@@ -170,7 +203,10 @@ def run_season(game_files):
 
     return players
 
-def save_elos(players, filepath="player_elos.csv"):
+def save_elos(players, filepath="data/elos/player_elos.csv"):
+    path = Path(filepath)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
     rows = [
         {
             "player_id": pid,
@@ -181,7 +217,7 @@ def save_elos(players, filepath="player_elos.csv"):
     ]
 
     df = pd.DataFrame(rows).sort_values("elo", ascending=False)
-    df.to_csv(filepath, index=False)
+    df.to_csv(path, index=False)
 
 def elo_update():
     # Setup
